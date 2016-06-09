@@ -10,7 +10,7 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def speak(data)
-    message = Message.create content: "#{Time.now}> #{data['message']}"
+    message = Message.create content: data['message']
     ActionCable.server.broadcast('messages',
      ApplicationController.render(partial: 'messages/message', locals: { message: message })
     )
@@ -18,6 +18,6 @@ class ChatChannel < ApplicationCable::Channel
 
   def hide_message(data)
     Rails.logger.debug "Hiding message #{data['message_id']}"
-    Message.find(data['message_id']).hide
+    HideMessageJob.perform_later(data['message_id'])
   end
 end
